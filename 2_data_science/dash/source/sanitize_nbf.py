@@ -195,6 +195,22 @@ def uf():
     uf['max'] = df.groupby(
         ['UF'])['Valor'].max().progress_apply(lambda x: x)
 
+    # A equação essencial da PONTUAÇÃO Z (zscore) para um exemplo é:
+    # z = (x – μ)/σ
+    # x = metrica = Valor médio pago ao total de  Benefiário na UF
+    # média (μ) = Valor médio pado ao total Beneficiários do Brasil
+    # desvio padrão (σ) = Desvio padrão
+
+    tqdm.pandas(desc="🔹 mean  ")
+    br_mean = df['Valor'].mean()
+
+    print("🔹 std   ")
+    br_std = df['Valor'].std()
+
+    tqdm.pandas(desc="🔹 zscore ")
+    uf['zscore'] = ((uf['mean'] - br_mean) /
+                    br_std).progress_apply(lambda x: x)
+
     tqdm.pandas(desc="🔹 Mun   ")
     uf['Municípios'] = df.groupby(
         ['UF'])['Municipio'].unique().progress_apply(lambda x: len(x))
@@ -230,11 +246,21 @@ def uf():
     uf['99%'] = uf['99%'].astype(int)
     uf['max'] = uf['max'].astype(int)
     uf.columns = ['Recursos', 'Beneficiarios', 'Media', 'Desvio',
-                  'Minimo', 'Perc_1', 'Mediana', 'Perc_99', 'Maximo', 'Municipios', 'Perc_recursos_BR', 'pop_2022', 'Auxilio', 'BR']
+                  'Minimo', 'Perc_1', 'Mediana', 'Perc_99', 'Maximo', 'zscore', 'Municipios', 'Perc_recursos_BR', 'pop_2022', 'Auxilio', 'BR']
 
     uf.reset_index(inplace=True)
+
+    tqdm.pandas(desc="🔹 PerMun")
+    uf['Per_municipio'] = (uf['Recursos'] / uf['Municipios']
+                           ).progress_apply(lambda x: int(x))
+
+    tqdm.pandas(desc="🔹 Percap")
+    uf['Per_beneficiario'] = (
+        uf['Recursos'] / uf['Beneficiarios']).progress_apply(lambda x: x)
+
     uf['Flag'] = uf['UF'].progress_apply(
         lambda x: f"https://raw.githubusercontent.com/bgeneto/bandeiras-br/master/imagens/{x}.png")
+
     # https://raw.githubusercontent.com/bgeneto/bandeiras-br/master/imagens/{x}.png
     # https://github.com/bgeneto/bandeiras-br/blob/master/imagens/{x}.png
 
@@ -270,11 +296,17 @@ def br():
     print("🔹  1%   ")
     br_1 = df['Valor'].quantile(q=0.01)
 
+    print("🔹 Rec_1%  ")
+    br_rec_1 = df[df['Valor'] < br_1]['Valor'].sum()
+
     print("🔹 50%   ")
     br_50 = df['Valor'].quantile(q=0.50)
 
     print("🔹 99%   ")
     br_99 = df['Valor'].quantile(q=0.99)
+
+    print("🔹 Rec_1%  ")
+    br_rec_99 = df[df['Valor'] > br_99]['Valor'].sum()
 
     print("🔹 max   ")
     br_max = df['Valor'].max()
@@ -295,11 +327,14 @@ def br():
   #  br_br = ((br['count'] / br_pop) *
   #           100).progress_apply(lambda x: x)
 
-    data = [{'br': 'Brasil', 'Recursos': br_total, 'Beneficiarios': br_count, 'Media':  # br_mean, 'Desvio': br_std,
-             #         'Minimo': f'{br_min:.0f}', '1%': f'{br_1:.0f}', 'Mediana': f'{br_50:.0f}', '99%': f'{br_99:.0f}', 'Maximo': f'{br_max:.0f}', 'Municipios': f'{br_Mun:.0f}', 'pop_22': f'{br_pop:.0f}', 'social': f'{br_social:.5f}'}]
+    print("🔹 br_Per_municipio")
+    br_Per_municipio = int(br_total / br_Mun)
 
-             br_mean, 'Desvio': br_std,
-             'Minimo': br_min, 'perc_1': br_1, 'Mediana': br_50, 'perc_99': br_99, 'Maximo': br_max, 'Municipios': br_Mun, 'pop_2022': br_pop, 'auxilio': br_auxilio}]
+    print("🔹 br_Per_beneficiario")
+    br_Per_beneficiario = float(br_total / br_count)
+
+    data = [{'br': 'Brasil', 'Recursos': br_total, 'Beneficiarios': br_count, 'Media':
+            br_mean, 'Desvio': br_std, 'Minimo': br_min, 'perc_1': br_1, 'rec_1': br_rec_1, 'Mediana': br_50, 'perc_99': br_99, 'rec_99': br_rec_99, 'Maximo': br_max, 'Municipios': br_Mun, 'Per_municipio': br_Per_municipio, 'Per_beneficiario': br_Per_beneficiario, 'pop_2022': br_pop, 'auxilio': br_auxilio}]
 
     br = pd.DataFrame(data)
 

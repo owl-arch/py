@@ -1,5 +1,5 @@
 [data-testid=metric-container] {
-  box-shadow: 0 0 4px #cccccc;
+  box-shadow: 0 0 4px #f2dc12;
   padding: 10px;
 
 }
@@ -22,6 +22,8 @@ div[data-testid="stExpander"] div[role="button"] p {
   visibility: hidden;
 }
 
+/*
 .footer>div {
   color: rgb(248, 244, 2);
 }
+*/

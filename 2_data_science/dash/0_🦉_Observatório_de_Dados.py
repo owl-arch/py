@@ -21,32 +21,11 @@ Header = {"title": ':rainbow[Novo Bolsa Familia]',
 st.session_state["Header"] = Header
 
 
-##
-# Data Ingestion
-# Ingestão de Dados
-##
-@ st.cache_data  # Cache the dataframe so it's only loaded once
-def load_datafile():
-    # dataset = "dataset/cleaned_data.csv"
-    dataset = "dataset/Brasil_202306_NovoBolsaFamilia.csv"
-    colunas_selecionadas = ['Municipio', 'UF', 'Total', 'count',
-                            'mean', 'std', 'min', '25%', '50%', '75%', 'max']
-    df = pd.read_csv(dataset,
-                     index_col=0,
-                     # index_col='nome_da_coluna'
-                     delimiter=';', encoding='ISO-8859-1',
-                     # nrows=50,
-                     usecols=colunas_selecionadas
-                     )
-    # df_data("Date") = pd.to_datetime(df_data["Date"]) # Converte para data
-    return df
-
-
-if "Data" not in st.session_state:
-    data_load_state = st.text('Loading data...')
-    df_data = load_datafile()
-    st.session_state["Data"] = df_data
-    data_load_state.text('Loading data...done!')
+# if "Data" not in st.session_state:
+#    data_load_state = st.text('Loading data...')
+#    df_data = load_datafile()
+#    st.session_state["Data"] = df_data
+#   data_load_state.text('Loading data...done!')
 
 
 ##
